@@ -26,7 +26,7 @@ func main() {
 	)
 
 	app.Use(recover.New())
-
+	Test()
 	// 加载路由
 	router.Api(app)
 	godotenv.Load(".env")

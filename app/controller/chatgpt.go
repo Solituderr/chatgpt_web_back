@@ -51,6 +51,14 @@ func GetBalance() fiber.Handler {
 func CreateChatCompletion() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req request.ChatCompletionRequest
+		c.Response().Header.SetContentType("application/octet-stream")
+		c.Response().Header.Set("Transfer-Encoding", "chunked")
+		c.Response().Header.Set("Keep-Alive", "timeout=4")
+		c.Response().Header.Set("Proxy-Connection", "keep-alive")
+		c.Response().Header.Set("connection", "keep-alive")
+		c.Response().Header.Set("Access-Control-Allow-Methods", "*")
+		c.Response().Header.Set("Access-Control-Allow-Origin", "*")
+		c.Response().Header.Set("Access-Control-Allow-Headers", "authorization, Content-Type")
 		if err := c.BodyParser(&req); err != nil {
 			return app.Error(c, "解析参数错误："+err.Error())
 		}
@@ -59,9 +67,9 @@ func CreateChatCompletion() fiber.Handler {
 		if !v.Validate() {
 			return app.Error(c, v.Errors.One())
 		}
-
+		fmt.Println(req.Key)
 		chatGPT := service.ChatGPTService{
-			Key:   req.Key,
+			Key:   "",
 			Proxy: os.Getenv("PROXY"),
 			ChatCompletionRequest: openai.ChatCompletionRequest{
 				Model:       req.Model,
@@ -73,7 +81,7 @@ func CreateChatCompletion() fiber.Handler {
 		if req.DisableStream {
 			chatGPT.ChatCompletionRequest.Stream = false
 		}
-
+		// 处理Messages
 		if err := chatGPT.ContextHandler(req); err != nil {
 			return app.Error(c, ErrorHandler(req.Key, err).Error())
 		}
@@ -102,15 +110,7 @@ func CreateChatCompletion() fiber.Handler {
 			})
 		}
 		var gptResult response.ChatCompletionStreamResponse
-		// fiber 返回steam
-		c.Response().Header.SetContentType("application/octet-stream")
-		c.Response().Header.Set("Transfer-Encoding", "chunked")
-		c.Response().Header.Set("Keep-Alive", "timeout=4")
-		c.Response().Header.Set("Proxy-Connection", "keep-alive")
-		c.Response().Header.Set("connection", "keep-alive")
-		c.Response().Header.Set("Access-Control-Allow-Methods", "*")
-		c.Response().Header.Set("Access-Control-Allow-Origin", "*")
-		c.Response().Header.Set("Access-Control-Allow-Headers", "authorization, Content-Type")
+		// fiber 返回stream
 		c.Response().SetBodyStreamWriter(func(w *bufio.Writer) {
 			for {
 				if chatGPT.Response.Stream != nil {
@@ -150,7 +150,7 @@ func CreateChatCompletion() fiber.Handler {
 					gptResult.Detail = &r
 					gptResult.Id = r.ID
 					gptResult.Role = openai.ChatMessageRoleAssistant
-					gptResult.Text += r.Choices[0].Delta.Content
+					gptResult.Text += r.Choices[0].Delta.Content // 流传输
 
 					marshal, _ := json.Marshal(gptResult)
 					if _, err := fmt.Fprintf(w, "%s\n", marshal); err != nil {
@@ -203,9 +203,12 @@ func ErrorHandler(key string, err error) error {
 
 func CreateSession() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
+		c.Response().Header.Set("Access-Control-Allow-Methods", "*")
+		c.Response().Header.Set("Access-Control-Allow-Origin", "*")
+		c.Response().Header.Set("Access-Control-Allow-Headers", "authorization, Content-Type")
 		return c.JSON(response.SessionResponse{
-			Status: "Success",
+			Status:  "Success",
+			Message: "",
 			Data: struct {
 				Auth  bool   `json:"auth"`
 				Model string `json:"model"`
