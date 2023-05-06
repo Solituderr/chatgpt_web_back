@@ -1,0 +1,4 @@
+sql:
+  username: root
+  password: root
+  db_name: chatdata
