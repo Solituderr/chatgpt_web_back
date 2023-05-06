@@ -12,6 +12,7 @@ type ChatCompletionRequest struct {
 	Temperature   float32 `validate:"float|min:0|lte:2" message:"numeric:随机必须为数字|min:随机性必须大于0|lte:随机性必须小于等于2" label:"随机性"` // 随机性
 	DisableStream bool    `validate:"-"`
 	SystemMessage string  `validate:"-"`
+	Token         string  `validate:"-"`
 }
 
 type Options struct {

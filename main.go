@@ -1,34 +1,28 @@
 package main
 
 import (
+	"chatgpt/model"
 	"chatgpt/router"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"time"
 )
 
 func main() {
-	app := fiber.New(
-		fiber.Config{
-			ReadTimeout: time.Second * 20,
-		})
+	app := gin.Default()
 	// 加载请求记录
-	app.Use(
-		logger.New(
-			logger.Config{
-				Format:     "${time} ${status} - ${ip}:${port} - ${method} ${path} \n",
-				TimeFormat: "2006-01-02 15:04:05.000",
-				TimeZone:   "Asia/Shanghai",
-			},
-		),
-	)
-
-	app.Use(recover.New())
-	Test()
+	//app.Use(
+	//	logger.New(
+	//		logger.Config{
+	//			Format:     "${time} ${status} - ${ip}:${port} - ${method} ${path} \n",
+	//			TimeFormat: "2006-01-02 15:04:05.000",
+	//			TimeZone:   "Asia/Shanghai",
+	//		},
+	//	),
+	//)
+	//Test()
 	// 加载路由
+	model.Init()
 	router.Api(app)
 	godotenv.Load(".env")
-	app.Listen(":3000")
+	app.Run(":3000")
 }

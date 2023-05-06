@@ -154,7 +154,7 @@ func (c *ChatGPTService) ContextHandler(req request.ChatCompletionRequest) error
 		if id == "" {
 			break
 		}
-
+		//修改获取方式，从数据库获取
 		value, _ := database.GPTCache.Value(id)
 		if value == nil {
 			break

@@ -34,6 +34,10 @@ type SessionResponse struct {
 	} `json:"data"`
 }
 
+type VerifyResponse struct {
+	Token string `json:"token"`
+}
+
 type ErrorStream struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`

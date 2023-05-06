@@ -1,12 +1,13 @@
 package app
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // Response 统一返回
-func Response(c *fiber.Ctx, code int, data interface{}, msg string) error {
-	return c.Status(code).JSON(fiber.Map{
+func Response(c *gin.Context, code int, data interface{}, msg string) {
+	c.JSON(code, gin.H{
 		"code": code,
 		"data": data,
 		"msg":  msg,
@@ -14,11 +15,11 @@ func Response(c *fiber.Ctx, code int, data interface{}, msg string) error {
 }
 
 // Success 成功返回
-func Success(c *fiber.Ctx, data interface{}) error {
-	return Response(c, fiber.StatusOK, data, "success")
+func Success(c *gin.Context, data interface{}) {
+	Response(c, http.StatusOK, data, "success")
 }
 
 // Error 失败返回
-func Error(c *fiber.Ctx, msg string) error {
-	return Response(c, fiber.StatusOK, nil, msg)
+func Error(c *gin.Context, msg string) {
+	Response(c, http.StatusOK, nil, msg)
 }
